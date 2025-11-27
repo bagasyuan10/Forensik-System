@@ -6,12 +6,26 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pelaku extends Model
 {
-    protected $table = 'pelaku';   // ← TAMBAHKAN INI
+    protected $table = 'pelaku';
 
     protected $fillable = [
+        'kasus_id',
         'nama',
         'foto',
         'biodata',
-        'runtutan'
+        'hubungan_korban',
+        'peran',
+        'pengakuan',
+        'status_hukum',
     ];
+
+    public function kasus()
+    {
+        return $this->belongsTo(Kasus::class);
+    }
+
+    public function barangBukti()
+    {
+        return $this->belongsToMany(Bukti::class, 'pelaku_bukti', 'pelaku_id', 'bukti_id');
+    }
 }

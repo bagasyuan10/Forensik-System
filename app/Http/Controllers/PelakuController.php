@@ -4,114 +4,119 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Pelaku;
-use Illuminate\Support\Facades\Storage;
+use App\Models\Kasus;
+use App\Models\Bukti;
 
 class PelakuController extends Controller
 {
-    // =====================================================
-    // INDEX
-    // =====================================================
     public function index()
     {
-        $pelaku = Pelaku::latest()->paginate(10);
+        $pelaku = Pelaku::with('kasus')->latest()->paginate(10);
         return view('pelaku.index', compact('pelaku'));
     }
 
-    // =====================================================
-    // CREATE
-    // =====================================================
     public function create()
     {
-        return view('pelaku.create');
+        $kasus = Kasus::all();
+        $barangBukti = Bukti::all(); // ← FIX PENTING
+
+        return view('pelaku.create', compact('kasus', 'barangBukti'));
     }
 
-    // =====================================================
-    // STORE
-    // =====================================================
     public function store(Request $request)
     {
         $request->validate([
-            'nama'       => 'required|string|max:255',
-            'foto'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'biodata'    => 'required|string',
-            'runtutan'   => 'required|string',
+            'kasus_id' => 'required|exists:kasus,id',
+            'nama' => 'required|string|max:255',
+            'status_hukum' => 'required|string',
+            'foto' => 'image|mimes:jpg,png,jpeg,webp|max:2048'
         ]);
 
-        $fotoPath = null;
-
+        // Upload Foto
+        $foto = null;
         if ($request->hasFile('foto')) {
-            $fotoPath = $request->file('foto')->store('pelaku', 'public');
+            $foto = $request->file('foto')->store('pelaku', 'public');
         }
 
-        Pelaku::create([
-            'nama'       => $request->nama,
-            'foto'       => $fotoPath,
-            'biodata'    => $request->biodata,
-            'runtutan'   => $request->runtutan,
+        // Create Pelaku
+        $pelaku = Pelaku::create([
+            'kasus_id'        => $request->kasus_id,
+            'nama'            => $request->nama,
+            'foto'            => $foto,
+            'biodata'         => $request->biodata,
+            'hubungan_korban' => $request->hubungan_korban,
+            'peran'           => $request->peran,
+            'pengakuan'       => $request->pengakuan,
+            'status_hukum'    => $request->status_hukum
         ]);
 
+        // Jika pelaku punya barang bukti terkait
+        if ($request->barang_bukti_id) {
+            $pelaku->barangBukti()->sync($request->barang_bukti_id);
+        }
+
         return redirect()->route('pelaku.index')
-            ->with('success', 'Data pelaku berhasil ditambahkan.');
+                         ->with('success', 'Pelaku berhasil ditambahkan!');
     }
 
-    // =====================================================
-    // EDIT
-    // =====================================================
+    public function show($id)
+    {
+        $pelaku = Pelaku::with(['kasus', 'barangBukti'])->findOrFail($id);
+        return view('pelaku.show', compact('pelaku'));
+    }
+
     public function edit($id)
     {
         $pelaku = Pelaku::findOrFail($id);
-        return view('pelaku.edit', compact('pelaku'));
+        $kasus = Kasus::all();
+        $barangBukti = Bukti::all();
+
+        return view('pelaku.edit', compact('pelaku', 'kasus', 'barangBukti'));
     }
 
-    // =====================================================
-    // UPDATE
-    // =====================================================
     public function update(Request $request, $id)
     {
         $pelaku = Pelaku::findOrFail($id);
 
         $request->validate([
-            'nama'       => 'required|string|max:255',
-            'foto'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'biodata'    => 'required|string',
-            'runtutan'   => 'required|string',
+            'kasus_id' => 'required|exists:kasus,id',
+            'nama' => 'required|string|max:255',
+            'status_hukum' => 'required|string',
+            'foto' => 'image|mimes:jpg,png,jpeg,webp|max:2048'
         ]);
 
-        $fotoPath = $pelaku->foto;
-
+        // Update foto jika ada
         if ($request->hasFile('foto')) {
-            if ($pelaku->foto) {
-                Storage::disk('public')->delete($pelaku->foto);
-            }
-
-            $fotoPath = $request->file('foto')->store('pelaku', 'public');
+            $foto = $request->file('foto')->store('pelaku', 'public');
+        } else {
+            $foto = $pelaku->foto;
         }
 
         $pelaku->update([
-            'nama'       => $request->nama,
-            'foto'       => $fotoPath,
-            'biodata'    => $request->biodata,
-            'runtutan'   => $request->runtutan,
+            'kasus_id'        => $request->kasus_id,
+            'nama'            => $request->nama,
+            'foto'            => $foto,
+            'biodata'         => $request->biodata,
+            'hubungan_korban' => $request->hubungan_korban,
+            'peran'           => $request->peran,
+            'pengakuan'       => $request->pengakuan,
+            'status_hukum'    => $request->status_hukum
         ]);
 
-        return redirect()->route('pelaku.index')
-            ->with('success', 'Data pelaku berhasil diperbarui.');
-    }
-
-    // =====================================================
-    // DESTROY
-    // =====================================================
-    public function destroy($id)
-    {
-        $pelaku = Pelaku::findOrFail($id);
-
-        if ($pelaku->foto) {
-            Storage::disk('public')->delete($pelaku->foto);
+        // Update relasi barang bukti
+        if ($request->barang_bukti_id) {
+            $pelaku->barangBukti()->sync($request->barang_bukti_id);
         }
 
-        $pelaku->delete();
+        return redirect()->route('pelaku.index')
+                         ->with('success', 'Data pelaku berhasil diperbarui!');
+    }
+
+    public function destroy($id)
+    {
+        Pelaku::findOrFail($id)->delete();
 
         return redirect()->route('pelaku.index')
-            ->with('success', 'Data pelaku berhasil dihapus.');
+                         ->with('success', 'Pelaku berhasil dihapus!');
     }
 }

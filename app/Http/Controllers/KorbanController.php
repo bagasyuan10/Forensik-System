@@ -3,61 +3,98 @@
 namespace App\Http\Controllers;
 
 use App\Models\Korban;
+use App\Models\Kasus;
 use Illuminate\Http\Request;
 
 class KorbanController extends Controller
 {
+    // Menampilkan daftar korban
     public function index()
     {
-        $data = Korban::all();
+        $data = Korban::latest()->paginate(10);
         return view('korban.index', compact('data'));
     }
 
+    // Menampilkan form tambah korban
     public function create()
     {
-        return view('korban.create');
+        $kasus = Kasus::all(); // diperlukan untuk dropdown kasus_id
+        return view('korban.create', compact('kasus'));
     }
 
+    // Menyimpan korban baru
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'kontak' => 'nullable|string|max:255',
-            'alamat' => 'nullable|string',
+            'kasus_id'          => 'required|exists:kasus,id',
+            'nama'              => 'required|string|max:255',
+            'kontak'            => 'nullable|string|max:255',
+            'alamat'            => 'nullable|string',
+            'umur'              => 'nullable|integer|min:0|max:150',
+            'jenis_kelamin'     => 'nullable|in:L,P',
+            'kondisi'           => 'nullable|string',
+            'keterangan'        => 'nullable|string',
+            'versi_kejadian'    => 'nullable|string',
+            'foto'              => 'nullable|image|max:2048',
         ]);
 
-        Korban::create($request->all());
+        $data = $request->all();
 
-        return redirect()->route('korban.index')
-                         ->with('success', 'Korban berhasil ditambahkan.');
+        // Upload foto jika ada
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('foto_korban', 'public');
+        }
+
+        Korban::create($data);
+
+        return redirect()
+            ->route('korban.index')
+            ->with('success', 'Data korban berhasil ditambahkan');
     }
 
-    public function edit($id)
+    // Menampilkan form edit
+    public function edit(Korban $korban)
     {
-        $korban = Korban::findOrFail($id);
-        return view('korban.edit', compact('korban'));
+        $kasus = Kasus::all();
+        return view('korban.edit', compact('korban', 'kasus'));
     }
 
-    public function update(Request $request, $id)
+    // Update data korban
+    public function update(Request $request, Korban $korban)
     {
-        $korban = Korban::findOrFail($id);
-
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'kontak' => 'nullable|string|max:255',
-            'alamat' => 'nullable|string',
+            'kasus_id'          => 'required|exists:kasus,id',
+            'nama'              => 'required|string|max:255',
+            'kontak'            => 'nullable|string|max:255',
+            'alamat'            => 'nullable|string',
+            'umur'              => 'nullable|integer|min:0|max:150',
+            'jenis_kelamin'     => 'nullable|in:L,P',
+            'kondisi'           => 'nullable|string',
+            'keterangan'        => 'nullable|string',
+            'versi_kejadian'    => 'nullable|string',
+            'foto'              => 'nullable|image|max:2048',
         ]);
 
-        $korban->update($request->all());
+        $data = $request->all();
 
-        return redirect()->route('korban.index')->with('success', 'Data korban berhasil diperbarui.');
+        // Update foto jika ada
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('foto_korban', 'public');
+        }
+
+        $korban->update($data);
+
+        return redirect()
+            ->route('korban.index')
+            ->with('success', 'Data korban berhasil diperbarui');
     }
 
-    public function destroy($id)
+    // Hapus korban
+    public function destroy(Korban $korban)
     {
-        Korban::destroy($id);
-
-        return redirect()->route('korban.index')
-                         ->with('success', 'Korban berhasil dihapus.');
+        $korban->delete();
+        return redirect()
+            ->route('korban.index')
+            ->with('success', 'Data korban berhasil dihapus');
     }
 }

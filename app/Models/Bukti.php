@@ -9,9 +9,18 @@ class Bukti extends Model
     protected $table = 'bukti';
 
     protected $fillable = [
-        'id_kasus',
+        'kasus_id',
+        'kategori',
         'nama_bukti',
+        'foto',
         'deskripsi',
-        'tanggal_ditemukan'
+        'lokasi_ditemukan',
+        'waktu_ditemukan',
+        'petugas_menemukan'
     ];
+
+    public function kasus()
+    {
+        return $this->belongsTo(Kasus::class);
+    }
 }

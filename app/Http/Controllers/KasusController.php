@@ -7,74 +7,65 @@ use Illuminate\Http\Request;
 
 class KasusController extends Controller
 {
-    // List semua kasus
     public function index()
     {
-        $kasus = Kasus::latest()->paginate(9);
+        $kasus = Kasus::all();
         return view('kasus.index', compact('kasus'));
     }
 
-    // FORM TAMBAH KASUS
     public function create()
     {
-        return view('kasus.create');
+        // Tidak pakai model JenisKasus
+        $jenisKasus = ['Kriminal', 'Cybercrime', 'Kekerasan', 'Lainnya'];
+        return view('kasus.create', compact('jenisKasus'));
     }
 
-    // PROSES SIMPAN KASUS
     public function store(Request $request)
     {
-        $request->validate([
-            'judul'       => 'required|string|max:255',
-            'nomor_kasus' => 'required|string|unique:kasus',
-            'lokasi'      => 'nullable|string|max:255',
-            'deskripsi'   => 'nullable|string',
+        $validated = $request->validate([
+            'judul'        => 'required|string',
+            'nomor_kasus'  => 'required|string|unique:kasus',
+            'jenis'        => 'required|string',
+            'lokasi'       => 'nullable|string',
+            'tanggal'      => 'nullable|date',
+            'deskripsi'    => 'nullable|string',
         ]);
 
-        Kasus::create($request->all());
+        Kasus::create($validated);
 
-        return redirect()->route('kasus.index')
-                         ->with('success', 'Kasus berhasil dibuat!');
+        return redirect()->route('kasus.index')->with('success', 'Kasus berhasil ditambahkan');
     }
 
-    // DETAIL
-    public function show($id)
+    public function show(Kasus $kasu)
     {
-        $kasus = Kasus::findOrFail($id);
-        return view('kasus.show', compact('kasus'));
+        return view('kasus.show', compact('kasu'));
     }
 
-    // FORM EDIT
-    public function edit($id)
+    public function edit(Kasus $kasu)
     {
-        $kasus = Kasus::findOrFail($id);
-        return view('kasus.edit', compact('kasus'));
+        $jenisKasus = ['Kriminal', 'Cybercrime', 'Kekerasan', 'Lainnya'];
+        return view('kasus.edit', compact('kasu', 'jenisKasus'));
     }
 
-    // PROSES UPDATE
-    public function update(Request $request, $id)
+    public function update(Request $request, Kasus $kasu)
     {
-        $kasus = Kasus::findOrFail($id);
-
-        $request->validate([
-            'judul'       => 'required|string|max:255',
-            'nomor_kasus' => "required|string|unique:kasus,nomor_kasus,{$id}",
-            'lokasi'      => 'nullable|string|max:255',
-            'deskripsi'   => 'nullable|string',
+        $validated = $request->validate([
+            'judul'        => 'required|string',
+            'nomor_kasus'  => 'required|string|unique:kasus,nomor_kasus,' . $kasu->id,
+            'jenis'        => 'required|string',
+            'lokasi'       => 'nullable|string',
+            'tanggal'      => 'nullable|date',
+            'deskripsi'    => 'nullable|string',
         ]);
 
-        $kasus->update($request->all());
+        $kasu->update($validated);
 
-        return redirect()->route('kasus.index')
-                         ->with('success', 'Kasus berhasil diperbarui!');
+        return redirect()->route('kasus.index')->with('success', 'Kasus berhasil diperbarui');
     }
 
-    // HAPUS
-    public function destroy($id)
+    public function destroy(Kasus $kasu)
     {
-        $kasus = Kasus::findOrFail($id);
-        $kasus->delete();
-
-        return redirect()->route('kasus.index')
-                         ->with('success', 'Kasus berhasil dihapus');
+        $kasu->delete();
+        return redirect()->route('kasus.index')->with('success', 'Kasus berhasil dihapus');
     }
 }

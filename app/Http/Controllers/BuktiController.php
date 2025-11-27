@@ -3,85 +3,92 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bukti;
+use App\Models\Kasus;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class BuktiController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = Bukti::query();
-
-        if ($request->search) {
-            $query->where('nama_bukti', 'like', "%{$request->search}%")
-                  ->orWhere('deskripsi', 'like', "%{$request->search}%")
-                  ->orWhere('file_name', 'like', "%{$request->search}%");
-        }
-
-        if ($request->filter === "image") {
-            $query->where('file_type', 'like', 'image/%');
-        }
-
-        if ($request->filter === "pdf") {
-            $query->where('file_type', 'application/pdf');
-        }
-
-        $bukti = $query->orderBy('created_at', 'desc')->paginate(8);
-
+        $bukti = Bukti::with('kasus')->latest()->paginate(10);
         return view('bukti.index', compact('bukti'));
     }
 
     public function create()
     {
-        return view('bukti.create');
+        $kasus = Kasus::all(); // supaya dropdown kasus muncul
+        return view('bukti.create', compact('kasus'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'nama_bukti' => 'required',
-            'deskripsi' => 'nullable',
-            'file' => 'required|file|max:50000'
+            'kasus_id'          => 'required|exists:kasus,id',
+            'kategori'          => 'required',
+            'nama_bukti'        => 'required',
+            'foto'              => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
+            'deskripsi'         => 'nullable',
+            'lokasi_ditemukan'  => 'nullable|string',
+            'waktu_ditemukan'   => 'nullable|date',
+            'petugas_menemukan' => 'nullable|string'
         ]);
 
-        $file = $request->file('file');
-        $path = $file->store('uploads/bukti', 'public');
+        $data = $request->all();
 
-        Bukti::create([
-            'nama_bukti' => $request->nama_bukti,
-            'deskripsi' => $request->deskripsi,
-            'file_name' => $file->getClientOriginalName(),
-            'file_size' => $file->getSize(),
-            'file_type' => $file->getMimeType(),
-            'file_path' => $path,
+        // Upload file
+        if ($request->hasFile('foto')) {
+            $fileName = time() . '_' . $request->foto->getClientOriginalName();
+            $request->foto->move(public_path('uploads/bukti'), $fileName);
+            $data['foto'] = $fileName;
+        }
+
+        Bukti::create($data);
+
+        return redirect()
+            ->route('bukti.index')
+            ->with('success', 'Barang bukti berhasil ditambahkan.');
+    }
+
+    public function edit(Bukti $bukti)
+    {
+        $kasus = Kasus::all();
+        return view('bukti.edit', compact('bukti', 'kasus'));
+    }
+
+    public function update(Request $request, Bukti $bukti)
+    {
+        $request->validate([
+            'kasus_id'          => 'required|exists:kasus,id',
+            'kategori'          => 'required',
+            'nama_bukti'        => 'required',
+            'foto'              => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
+            'deskripsi'         => 'nullable',
+            'lokasi_ditemukan'  => 'nullable|string',
+            'waktu_ditemukan'   => 'nullable|date',
+            'petugas_menemukan' => 'nullable|string'
         ]);
 
-        return redirect()->route('bukti.index')->with('success', 'Bukti berhasil ditambahkan.');
+        $data = $request->all();
+
+        // Upload file baru (jika ada)
+        if ($request->hasFile('foto')) {
+            $fileName = time() . '_' . $request->foto->getClientOriginalName();
+            $request->foto->move(public_path('uploads/bukti'), $fileName);
+            $data['foto'] = $fileName;
+        }
+
+        $bukti->update($data);
+
+        return redirect()
+            ->route('bukti.index')
+            ->with('success', 'Data bukti berhasil diperbarui.');
     }
 
-    public function edit($id)
+    public function destroy(Bukti $bukti)
     {
-        $bukti = Bukti::findOrFail($id);
-        return view('bukti.edit', compact('bukti'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $bukti = Bukti::findOrFail($id);
-
-        $bukti->update($request->only(['nama_bukti', 'deskripsi']));
-
-        return redirect()->route('bukti.index')->with('success', 'Bukti diperbarui.');
-    }
-
-    public function destroy($id)
-    {
-        $bukti = Bukti::findOrFail($id);
-
-        Storage::disk('public')->delete($bukti->file_path);
-
         $bukti->delete();
-
-        return redirect()->route('bukti.index')->with('success', 'Bukti dihapus.');
+        return redirect()
+            ->route('bukti.index')
+            ->with('success', 'Barang bukti berhasil dihapus.');
     }
 }
