@@ -2,228 +2,370 @@
 
 @section('content')
 
-{{-- Style Tambahan (Sama dengan halaman Tindakan) --}}
+{{-- 1. LIBRARY TAMBAHAN (CDN) --}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
-    /* Card Container */
-    .custom-card {
-        background: #1e293b; /* Slate-800 */
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 16px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    /* --- BACKGROUND ACCENTS --- */
+    .bg-blob {
+        position: absolute;
+        filter: blur(80px);
+        z-index: 0;
+        opacity: 0.4;
+        animation: float 10s infinite ease-in-out;
+    }
+    .blob-1 { top: -10%; right: -5%; width: 300px; height: 300px; background: #06b6d4; }
+    .blob-2 { bottom: 10%; left: -5%; width: 250px; height: 250px; background: #6366f1; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
     }
 
-    /* Typography */
-    .page-title {
-        background: linear-gradient(to right, #fff, #94a3b8);
+    /* --- GLASS FORM & CARDS --- */
+    .glass-panel {
+        background: rgba(30, 41, 59, 0.4);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+    }
+
+    .search-input {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border-radius: 50px;
+        padding: 14px 20px 14px 50px;
+        transition: all 0.3s;
+    }
+    .search-input:focus {
+        background: rgba(15, 23, 42, 0.9);
+        border-color: #22d3ee;
+        box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+        color: #fff;
+    }
+
+    /* --- REPORT CARD DESIGN (Adapted from Case Card) --- */
+    .report-card {
+        background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8));
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .report-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        border-color: rgba(34, 211, 238, 0.3);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 
+                    0 0 20px rgba(34, 211, 238, 0.1);
+    }
+
+    /* Neon Line Top */
+    .report-card::after {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+        background: linear-gradient(90deg, transparent, #22d3ee, #818cf8, transparent);
+        opacity: 0.6;
+    }
+
+    .card-icon-box {
+        width: 45px; height: 45px;
+        background: rgba(34, 211, 238, 0.1);
+        border: 1px solid rgba(34, 211, 238, 0.2);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        color: #22d3ee;
+        font-size: 22px;
+    }
+
+    .reporter-badge {
+        font-family: 'Courier New', monospace;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 4px 10px;
+        border-radius: 6px;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        border: 1px solid rgba(255,255,255,0.05);
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Buttons Actions */
+    .action-btn {
+        width: 38px; height: 38px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.03);
+        color: #94a3b8;
+        transition: 0.3s;
+        cursor: pointer;
+    }
+    
+    .action-btn:hover { transform: rotate(15deg); color: #fff; }
+    .btn-edit:hover { background: #f59e0b; border-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+    .btn-delete:hover { background: #ef4444; border-color: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+
+    .btn-neon-primary {
+        background: linear-gradient(90deg, #06b6d4, #3b82f6);
+        color: white; border: none; font-weight: 600;
+        padding: 10px 25px; border-radius: 50px;
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+        transition: 0.3s;
+    }
+    .btn-neon-primary:hover {
+        box-shadow: 0 0 25px rgba(6, 182, 212, 0.6);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    /* Custom Pagination Dark Mode */
+    .pagination .page-link {
+        background: rgba(15, 23, 42, 0.8);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+    }
+    .pagination .active .page-link {
+        background: #06b6d4;
+        border-color: #06b6d4;
+        color: white;
+    }
+
+    /* Title Gradient */
+    .text-gradient {
+        background: linear-gradient(to right, #fff, #a5f3fc);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-    }
-
-    /* Table Styling */
-    .table-dark-custom {
-        --bs-table-bg: transparent;
-        --bs-table-color: #e2e8f0;
-        --bs-table-border-color: rgba(255, 255, 255, 0.05);
-        --bs-table-hover-bg: rgba(255, 255, 255, 0.03);
-    }
-    
-    .table-dark-custom thead th {
-        background-color: rgba(15, 23, 42, 0.5); /* Slate-900 transparent */
-        color: #94a3b8;
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        padding: 16px;
-    }
-
-    .table-dark-custom tbody td {
-        padding: 16px;
-        vertical-align: middle;
-        font-size: 0.95rem;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-
-    /* Action Buttons */
-    .btn-action {
-        width: 32px;
-        height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        transition: all 0.2s;
-        border: none;
-    }
-    
-    .btn-edit { background: rgba(245, 158, 11, 0.1); color: #fbbf24; }
-    .btn-edit:hover { background: #fbbf24; color: #000; transform: translateY(-2px); }
-
-    .btn-delete { background: rgba(239, 68, 68, 0.1); color: #f87171; }
-    .btn-delete:hover { background: #ef4444; color: #fff; transform: translateY(-2px); }
-
-    /* Button Primary Glow */
-    .btn-glow {
-        background: linear-gradient(135deg, #06b6d4, #3b82f6);
-        border: none;
-        box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
-        transition: transform 0.2s;
-        color: white;
-        font-weight: 600;
-        padding: 10px 20px;
-    }
-    .btn-glow:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
-        color: white;
-    }
-
-    /* Badge Style */
-    .badge-case {
-        background: rgba(168, 85, 247, 0.1); /* Ungu untuk laporan agar beda dikit */
-        color: #c084fc;
-        padding: 5px 10px;
-        border-radius: 6px;
-        font-weight: 500;
-        font-size: 0.85rem;
-        border: 1px solid rgba(168, 85, 247, 0.2);
-    }
-    
-    /* Custom Alert */
-    .alert-glass {
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        color: #34d399;
-        border-radius: 12px;
     }
 </style>
 
-<div class="container-fluid py-4">
+<div class="position-relative container-fluid py-4" style="min-height: 80vh;">
+    
+    {{-- Background Blobs --}}
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="page-title mb-1">Daftar Laporan</h2>
-            <p class="text-secondary m-0" style="font-size: 0.9rem;">Arsip dokumentasi dan hasil analisis forensik</p>
+    {{-- HEADER SECTION --}}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 animate__animated animate__fadeInDown">
+        <div class="mb-3 mb-md-0">
+            <h2 class="fw-bold display-6 text-gradient mb-1">Daftar Pengaduan</h2>
+            <div class="d-flex align-items-center gap-2 text-secondary">
+                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 px-3 py-1 rounded-pill">
+                    Total: {{ $laporan->total() ?? 0 }}
+                </span>
+                <span style="font-size: 0.9rem;">Laporan warga masuk</span>
+            </div>
         </div>
         
-        <a href="{{ route('laporan.create') }}" class="btn btn-glow rounded-pill d-flex align-items-center gap-2">
-            <i class="ph-bold ph-plus"></i>
-            <span>Buat Laporan</span>
+        <a href="{{ route('laporan.create') }}" class="btn btn-neon-primary d-flex align-items-center gap-2">
+            <i class="ph-bold ph-megaphone" style="font-size: 1.2rem;"></i>
+            <span>Buat Aduan Baru</span>
         </a>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-glass d-flex align-items-center gap-2 mb-4" role="alert">
-            <i class="ph-fill ph-check-circle" style="font-size: 20px;"></i>
-            <div>{{ session('success') }}</div>
+    {{-- SEARCH & FILTER BAR --}}
+    <div class="glass-panel p-4 mb-5 animate__animated animate__fadeIn animate__delay-1s">
+        <form action="{{ route('laporan.index') }}" method="GET" class="row g-3 align-items-center">
+            <div class="col-md-6">
+                <div class="position-relative">
+                    <i class="ph-bold ph-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" style="font-size: 1.2rem;"></i>
+                    <input type="text" name="q" class="form-control search-input" 
+                           placeholder="Cari judul aduan atau nama pelapor..." 
+                           value="{{ request('q') }}">
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="position-relative">
+                    <i class="ph-bold ph-faders position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary"></i>
+                    <select name="filter" class="form-select search-input ps-5" style="cursor: pointer;">
+                        <option value="all" {{ request('filter')=='all' ? 'selected':'' }}>Semua Data</option>
+                        <option value="recent" {{ request('filter')=='recent' ? 'selected':'' }}>Terbaru</option>
+                        <option value="oldest" {{ request('filter')=='oldest' ? 'selected':'' }}>Terlama</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <button class="btn btn-primary w-100 rounded-pill fw-bold" 
+                        style="height: 50px; background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #60a5fa;">
+                    <i class="ph-bold ph-funnel me-2"></i> Terapkan Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {{-- CONTENT GRID --}}
+    @if($laporan->isEmpty())
+        <div class="glass-panel p-5 text-center animate__animated animate__zoomIn">
+            <div class="mb-3">
+                <i class="ph-duotone ph-inbox text-secondary" style="font-size: 64px;"></i>
+            </div>
+            <h4 class="text-white fw-bold">Belum Ada Aduan</h4>
+            <p class="text-secondary">Tidak ada laporan yang cocok dengan pencarian Anda.</p>
+            <a href="{{ route('laporan.index') }}" class="btn btn-outline-secondary rounded-pill px-4 mt-2">Reset Pencarian</a>
         </div>
-    @endif
-
-    <div class="custom-card p-0 overflow-hidden">
-        <div class="table-responsive">
-            <table class="table table-dark-custom table-hover m-0">
-                <thead>
-                    <tr>
-                        <th width="5%" class="text-center">#</th>
-                        <th width="30%">Judul Laporan</th>
-                        <th width="20%">Kasus Terkait</th>
-                        <th width="20%">Penyusun</th>
-                        <th width="15%">Tanggal</th>
-                        <th width="10%" class="text-center">Aksi</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse($laporan as $item)
-                    <tr>
-                        <td class="text-center text-secondary">
-                            {{ $loop->iteration + ($laporan->currentPage() - 1) * $laporan->perPage() }}
-                        </td>
+    @else
+        <div class="row g-4">
+            @foreach ($laporan as $index => $item)
+                {{-- Animation delay staggered based on index --}}
+                <div class="col-xl-4 col-md-6 animate__animated animate__fadeInUp" style="animation-delay: {{ $index * 0.1 }}s;">
+                    <div class="report-card p-4">
                         
-                        <td>
+                        {{-- Header Card --}}
+                        <div class="d-flex justify-content-between align-items-start mb-3">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center" 
-                                     style="width: 40px; height: 40px; background: rgba(255,255,255,0.05);">
-                                    <i class="ph-duotone ph-file-text" style="font-size: 20px; color: #cbd5e1;"></i>
+                                <div class="card-icon-box">
+                                    {{-- Menggunakan icon megaphone untuk laporan --}}
+                                    <i class="ph-duotone ph-megaphone"></i>
                                 </div>
                                 <div>
-                                    <span class="d-block fw-bold text-white">{{ $item->judul_laporan }}</span>
+                                    {{-- Menampilkan nama pelapor sebagai 'ID' visual --}}
+                                    <div class="reporter-badge" title="Pelapor: {{ $item->penyusun }}">
+                                        <i class="ph-bold ph-user me-1" style="font-size: 0.7rem;"></i>
+                                        {{ $item->penyusun ?? 'Anonim' }}
+                                    </div>
                                 </div>
                             </div>
-                        </td>
+                            
+                            {{-- Dropdown / Status --}}
+                            <div class="dropdown">
+                                <button class="btn btn-link text-secondary p-0" data-bs-toggle="dropdown">
+                                    <i class="ph-bold ph-dots-three-vertical" style="font-size: 1.5rem;"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-dark shadow-lg border-0">
+                                    <li><a class="dropdown-item" href="{{ route('laporan.edit', $item->id) }}"><i class="ph-bold ph-pencil me-2"></i> Edit Aduan</a></li>
+                                </ul>
+                            </div>
+                        </div>
 
-                        <td>
+                        {{-- Content --}}
+                        <h5 class="fw-bold text-white mb-2 text-truncate" title="{{ $item->judul_laporan }}">
+                            {{ $item->judul_laporan }}
+                        </h5>
+                        <p class="text-secondary small mb-4 flex-grow-1" style="line-height: 1.6; min-height: 40px;">
+                            {{ Str::limit($item->isi_laporan, 85, '...') }}
+                        </p>
+
+                        {{-- Meta Tags --}}
+                        <div class="d-flex flex-wrap gap-2 mb-4">
+                            {{-- Badge Kasus Terkait --}}
                             @if($item->kasus)
-                                <span class="badge-case">
-                                    <i class="ph-duotone ph-folder me-1"></i>
-                                    {{ Str::limit($item->kasus->judul, 20) }}
+                                <span class="badge bg-dark border border-secondary border-opacity-25 text-secondary fw-normal py-2 px-3 rounded-pill" title="Kasus Terkait">
+                                    <i class="ph-bold ph-folder-open me-1 text-info"></i> {{ Str::limit($item->kasus->judul, 15) }}
                                 </span>
                             @else
-                                <span class="text-secondary fst-italic">- Tidak ada kasus -</span>
+                                <span class="badge bg-dark border border-secondary border-opacity-25 text-secondary fw-normal py-2 px-3 rounded-pill fst-italic">
+                                    <i class="ph-bold ph-warning-circle me-1 text-warning"></i> Tanpa Kasus
+                                </span>
                             @endif
-                        </td>
 
-                        <td>
-                            <div class="d-flex align-items-center gap-2 text-gray-300">
-                                <i class="ph-duotone ph-user-pen text-secondary"></i>
-                                {{ $item->penyusun ?? '-' }}
-                            </div>
-                        </td>
-
-                        <td>
-                            <span class="text-white" style="font-size: 0.9rem;">
-                                @if($item->tanggal_laporan)
-                                    {{ \Carbon\Carbon::parse($item->tanggal_laporan)->format('d M Y') }}
-                                @else
-                                    -
-                                @endif
+                            {{-- Badge Tanggal --}}
+                            <span class="badge bg-dark border border-secondary border-opacity-25 text-secondary fw-normal py-2 px-3 rounded-pill">
+                                <i class="ph-bold ph-calendar me-1 text-info"></i> 
+                                {{ \Carbon\Carbon::parse($item->tanggal_laporan)->format('d M Y') }}
                             </span>
-                        </td>
+                        </div>
 
-                        <td class="text-center">
-                            <div class="d-flex justify-content-center gap-2">
-                                <a href="{{ route('laporan.edit', $item->id) }}" 
-                                   class="btn-action btn-edit" 
-                                   title="Edit Laporan">
+                        {{-- Action Buttons --}}
+                        <div class="d-flex justify-content-end align-items-center mt-auto pt-3 border-top border-secondary border-opacity-10">
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('laporan.edit', $item->id) }}" class="action-btn btn-edit" title="Edit">
                                     <i class="ph-bold ph-pencil-simple"></i>
                                 </a>
-
-                                <form action="{{ route('laporan.destroy', $item->id) }}" 
-                                      method="POST" 
-                                      class="d-inline"
-                                      onsubmit="return confirm('Yakin ingin menghapus laporan ini? Data yang dihapus tidak dapat dikembalikan.')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn-action btn-delete" title="Hapus Laporan">
-                                        <i class="ph-bold ph-trash"></i>
-                                    </button>
+                                
+                                {{-- Tombol Delete dengan SweetAlert --}}
+                                <button type="button" class="action-btn btn-delete" title="Hapus" 
+                                        onclick="confirmDelete('{{ $item->id }}')">
+                                    <i class="ph-bold ph-trash"></i>
+                                </button>
+                                
+                                {{-- Form Hidden untuk Delete --}}
+                                <form id="delete-form-{{ $item->id }}" action="{{ route('laporan.destroy', $item->id) }}" method="POST" class="d-none">
+                                    @csrf @method('DELETE')
                                 </form>
                             </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="text-center py-5">
-                            <div class="d-flex flex-column align-items-center">
-                                <i class="ph-duotone ph-folder-dashed text-secondary mb-3" style="font-size: 48px; opacity: 0.5;"></i>
-                                <h5 class="text-white">Belum ada laporan</h5>
-                                <p class="text-secondary mb-0">Klik tombol "Buat Laporan" untuk menambahkan data.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                        </div>
+
+                    </div>
+                </div>
+            @endforeach
         </div>
-        
-        @if($laporan->hasPages())
-        <div class="p-3 border-top border-secondary border-opacity-10">
-            {{ $laporan->links() }}
+
+        {{-- Pagination --}}
+        <div class="mt-5 d-flex justify-content-center">
+            @if($laporan->hasPages())
+                {{ $laporan->withQueryString()->links() }}
+            @endif
         </div>
-        @endif
-    </div>
+    @endif
 </div>
+
+{{-- SCRIPT KHUSUS --}}
+<script>
+    // 1. Notifikasi Flash Session (Jika ada pesan sukses dari Controller)
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: "{{ session('success') }}",
+            background: '#1e293b',
+            color: '#fff',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            customClass: {
+                popup: 'colored-toast'
+            }
+        });
+    @endif
+
+    // 2. Fungsi Pop-up Konfirmasi Delete
+    function confirmDelete(id) {
+        Swal.fire({
+            title: 'Hapus Aduan?',
+            text: "Data yang dihapus tidak dapat dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444', // Merah
+            cancelButtonColor: '#334155',  // Abu-abu
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal',
+            background: '#0f172a',
+            color: '#fff',
+            backdrop: `
+                rgba(0,0,0,0.6)
+                left top
+                no-repeat
+            `
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-form-' + id).submit();
+            }
+        })
+    }
+</script>
+
+<style>
+    /* Custom Style untuk SweetAlert agar sesuai tema */
+    div:where(.swal2-container) div:where(.swal2-popup) {
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 20px !important;
+    }
+</style>
+
 @endsection

@@ -9,27 +9,26 @@ return new class extends Migration {
     {
         Schema::create('pelaku', function (Blueprint $table) {
             $table->id();
+            
+            // Relasi ke Kasus
             $table->foreignId('kasus_id')->constrained('kasus')->onDelete('cascade');
 
             $table->string('nama');
             $table->string('foto')->nullable();
 
-            // biodata lengkap
-            $table->integer('umur')->nullable();
-            $table->string('alamat')->nullable();
-            $table->string('pekerjaan')->nullable();
-            $table->text('riwayat_kriminal')->nullable();
-            $table->text('ciri_fisik')->nullable();
+            // Biodata
+            $table->text('biodata')->nullable(); 
 
-            // hubungan & peran
+            // Hubungan & Peran
             $table->string('hubungan_korban')->nullable();
             $table->string('peran')->nullable();
 
-            // kronologi/pengakuan
+            // Pengakuan
             $table->text('pengakuan')->nullable();
 
-            // status hukum
-            $table->enum('status_hukum', ['DPO', 'Tersangka', 'Terdakwa', 'Terpidana'])
+            // --- PERBAIKAN DI SINI ---
+            // Tambahkan 'Saksi' ke dalam daftar array
+            $table->enum('status_hukum', ['Saksi', 'DPO', 'Tersangka', 'Terdakwa', 'Terpidana'])
                   ->default('Tersangka');
 
             $table->timestamps();

@@ -11,10 +11,19 @@ return new class extends Migration {
             $table->id();
             $table->string('judul');
             $table->string('nomor_kasus')->unique();
-            $table->string('jenis'); // kriminial, cybercrime, kekerasan, dll
+            
+            // Kolom penting untuk dashboard & filter
+            $table->string('jenis_kasus'); // Ganti 'jenis' jadi 'jenis_kasus' biar konsisten
+            $table->string('status')->default('dibuat'); // dibuat, penyidikan, selesai, diarsipkan
+            
             $table->string('lokasi')->nullable();
-            $table->date('tanggal')->nullable();
+            
+            // Kolom tanggal kejadian (PENTING untuk grafik dashboard)
+            $table->date('tanggal_kejadian')->nullable(); 
+            
             $table->text('deskripsi')->nullable();
+            $table->string('penyidik')->nullable(); // Tambahan untuk form create
+            
             $table->timestamps();
         });
     }

@@ -26,6 +26,7 @@ class Pelaku extends Model
 
     public function barangBukti()
     {
+        // Parameter ke-2 adalah nama tabel pivot: 'pelaku_bukti'
         return $this->belongsToMany(Bukti::class, 'pelaku_bukti', 'pelaku_id', 'bukti_id');
     }
 }

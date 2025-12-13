@@ -9,11 +9,14 @@ return new class extends Migration {
     {
         Schema::create('laporan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('kasus_id')->constrained('kasus')->onDelete('cascade');
+            
+            // PENTING: Tambahkan ->nullable() di sini
+            $table->foreignId('kasus_id')->nullable()->constrained('kasus')->onDelete('cascade');
+            
             $table->string('judul_laporan');
             $table->text('isi_laporan')->nullable();
             $table->date('tanggal_laporan')->nullable();
-            $table->string('penyusun')->nullable(); // nama penyidik / pelapor
+            $table->string('penyusun')->nullable(); 
             $table->timestamps();
         });
     }

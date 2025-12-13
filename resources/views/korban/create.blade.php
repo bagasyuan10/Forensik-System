@@ -2,265 +2,331 @@
 
 @section('content')
 
-{{-- Style Khusus Form --}}
+{{-- LIBRARY TAMBAHAN --}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
-    /* Card Container */
-    .custom-card {
-        background: #1e293b; /* Slate-800 */
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    /* --- BACKGROUND DECORATION (Sama persis) --- */
+    .bg-blob-form {
+        position: absolute; filter: blur(90px); z-index: 0; opacity: 0.3;
+        animation: floatBlob 12s infinite ease-in-out;
+    }
+    .blob-blue { top: -10%; left: 20%; width: 400px; height: 400px; background: #3b82f6; }
+    .blob-cyan { bottom: -10%; right: 10%; width: 300px; height: 300px; background: #06b6d4; }
+    .blob-purple { bottom: 20%; left: 10%; width: 250px; height: 250px; background: #8b5cf6; }
+
+    @keyframes floatBlob {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(20px, -20px); }
     }
 
-    /* Page Title */
-    .page-title {
-        background: linear-gradient(to right, #fff, #94a3b8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 800;
-        letter-spacing: -0.5px;
+    /* --- GLASS CARD --- */
+    .form-card {
+        background: rgba(30, 41, 59, 0.4);
+        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        position: relative; z-index: 1; overflow: hidden;
     }
 
-    /* Form Labels */
-    .form-label-custom {
-        color: #94a3b8;
-        font-weight: 600;
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .form-label-custom i { color: #22d3ee; font-size: 1.1rem; }
-    .text-danger { color: #ef4444 !important; }
-
-    /* Inputs (Glassy) */
-    .form-control-dark, .form-select-dark {
-        background-color: rgba(15, 23, 42, 0.6);
+    /* --- INPUT STYLES --- */
+    .input-group-text-glass {
+        background: rgba(15, 23, 42, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #e2e8f0;
-        border-radius: 12px;
+        border-right: none;
+        color: #94a3b8;
+        border-top-left-radius: 12px; border-bottom-left-radius: 12px;
+    }
+
+    .form-control-glass, .form-select-glass {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
         padding: 12px 16px;
         transition: all 0.3s ease;
     }
-
-    .form-control-dark:focus, .form-select-dark:focus {
-        background-color: rgba(15, 23, 42, 0.8);
-        border-color: #22d3ee;
-        box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.1);
-        color: #fff;
-    }
-
-    .form-control-dark::placeholder { color: #64748b; }
     
-    /* File Input Styling */
-    .form-control-dark[type="file"] {
-        padding: 10px;
+    .input-group .form-control-glass {
+        border-top-right-radius: 12px; border-bottom-right-radius: 12px;
     }
-    .form-control-dark::file-selector-button {
+    .standalone-input { border-radius: 12px !important; }
+
+    .form-control-glass:focus, .form-select-glass:focus {
+        background: rgba(15, 23, 42, 0.85);
+        border-color: #22d3ee;
+        box-shadow: 0 0 15px rgba(34, 211, 238, 0.15);
+        color: #fff; z-index: 2;
+    }
+    .form-control-glass::placeholder { color: #475569; }
+
+    /* Fix untuk Input Type File agar rapi di dark mode */
+    .form-control-glass[type="file"] {
+        padding: 8px 10px;
+    }
+    .form-control-glass::file-selector-button {
         background-color: rgba(255, 255, 255, 0.1);
-        color: #e2e8f0;
-        border: none;
-        border-radius: 6px;
-        padding: 6px 12px;
-        margin-right: 12px;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    .form-control-dark::file-selector-button:hover {
-        background-color: rgba(255, 255, 255, 0.2);
+        color: #e2e8f0; border: none; border-radius: 6px;
+        padding: 4px 10px; margin-right: 12px; cursor: pointer;
     }
 
-    /* Buttons */
-    .btn-glow {
-        background: linear-gradient(135deg, #06b6d4, #3b82f6);
-        border: none;
-        box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
-        color: white;
-        font-weight: 600;
-        padding: 12px 30px;
-        border-radius: 50px;
-        transition: transform 0.2s;
+    /* --- LABELS & TITLES --- */
+    .section-divider {
+        display: flex; align-items: center; gap: 15px; margin: 30px 0 20px;
     }
-    .btn-glow:hover { transform: translateY(-2px); color: white; }
-
-    .btn-ghost {
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #94a3b8;
-        padding: 12px 24px;
-        border-radius: 50px;
-        font-weight: 600;
-        transition: all 0.2s;
-    }
-    .btn-ghost:hover {
-        background: rgba(255, 255, 255, 0.05);
-        color: #fff;
-        border-color: #fff;
+    .section-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent); }
+    .section-title {
+        color: #22d3ee; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;
     }
 
-    /* Validation Feedback */
-    .invalid-feedback { font-size: 0.85em; color: #f87171; }
-    .is-invalid { border-color: #ef4444 !important; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important; }
+    .form-label-glow {
+        color: #cbd5e1; font-weight: 500; font-size: 0.9rem; margin-bottom: 8px;
+    }
+    .required-star { color: #ef4444; margin-left: 3px; }
+
+    /* --- BUTTONS --- */
+    .btn-neon-save {
+        background: linear-gradient(135deg, #06b6d4, #2563eb);
+        border: none; color: white; padding: 12px 35px;
+        border-radius: 50px; font-weight: 600; letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+        transition: 0.3s;
+    }
+    .btn-neon-save:hover {
+        transform: translateY(-2px); box-shadow: 0 6px 20px rgba(6, 182, 212, 0.6); color: white;
+    }
+
+    .btn-glass-cancel {
+        background: transparent; border: 1px solid rgba(255,255,255,0.2);
+        color: #94a3b8; padding: 12px 30px; border-radius: 50px; transition: 0.3s;
+    }
+    .btn-glass-cancel:hover {
+        background: rgba(255,255,255,0.05); color: #fff; border-color: #fff;
+    }
+
+    /* Scrollbar */
+    textarea::-webkit-scrollbar { width: 8px; }
+    textarea::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+    textarea::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
 </style>
 
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 position-relative" style="min-height: 85vh;">
+    
+    {{-- Background Lights --}}
+    <div class="bg-blob-form blob-blue"></div>
+    <div class="bg-blob-form blob-cyan"></div>
+    <div class="bg-blob-form blob-purple"></div>
 
-    {{-- Header Section --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    {{-- HEADER --}}
+    <div class="d-flex justify-content-between align-items-end mb-4 animate__animated animate__fadeInDown">
         <div>
-            <h2 class="page-title mb-1">Registrasi Data Korban</h2>
-            <p class="text-secondary m-0">Input data identitas dan kondisi korban kasus.</p>
+            <h2 class="fw-bold text-white mb-1">Registrasi Data Korban</h2>
+            <p class="text-secondary m-0">Input identitas dan kondisi fisik korban terkait kasus.</p>
         </div>
-        <div class="d-none d-md-block">
-            <div class="d-flex align-items-center gap-2 text-secondary bg-dark px-3 py-2 rounded-pill border border-secondary border-opacity-10">
-                <i class="ph-duotone ph-user-plus"></i>
-                <small>Form Input</small>
-            </div>
-        </div>
+        <a href="{{ route('korban.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+            <i class="ph-bold ph-arrow-left"></i> Kembali
+        </a>
     </div>
 
-    {{-- Form Card --}}
+    {{-- FORM CARD --}}
     <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="custom-card p-4 p-md-5">
+        <div class="col-lg-10 col-xl-9">
+            <div class="form-card p-4 p-md-5 animate__animated animate__fadeInUp animate__delay-1s">
                 
-                <form action="{{ route('korban.store') }}" method="POST" enctype="multipart/form-data" novalidate>
+                {{-- Form perlu enctype multipart karena ada upload FOTO --}}
+                <form id="createKorbanForm" action="{{ route('korban.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
-                    <div class="row g-4">
-                        
-                        {{-- 1. Kasus (Full Width) --}}
-                        <div class="col-12">
-                            <label class="form-label-custom">
-                                <i class="ph-bold ph-folder-open"></i> Kasus Terkait <span class="text-danger">*</span>
-                            </label>
-                            <select name="kasus_id" class="form-select form-select-dark @error('kasus_id') is-invalid @enderror" required>
-                                <option value="">-- Pilih Kasus --</option>
-                                @foreach($kasus as $k)
-                                    <option value="{{ $k->id }}" {{ old('kasus_id') == $k->id ? 'selected' : '' }}>
-                                        [#{{ $k->nomor_kasus }}] {{ $k->judul }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('kasus_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-
-                        {{-- SEPARATOR: Identitas Diri --}}
-                        <div class="col-12 mt-4 mb-2">
-                            <h6 class="text-white border-bottom border-secondary border-opacity-25 pb-2">
-                                <i class="ph-duotone ph-identification-card me-2"></i>Identitas Diri
-                            </h6>
-                        </div>
-
-                        {{-- 2. Nama Lengkap --}}
-                        <div class="col-md-6">
-                            <label class="form-label-custom">
-                                <i class="ph-bold ph-user"></i> Nama Lengkap <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="nama" class="form-control form-control-dark @error('nama') is-invalid @enderror" 
-                                   value="{{ old('nama') }}" placeholder="Contoh: Budi Santoso" required>
-                            @error('nama') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-
-                        {{-- 3. Jenis Kelamin --}}
-                        <div class="col-md-6">
-                            <label class="form-label-custom">
-                                <i class="ph-bold ph-gender-intersex"></i> Jenis Kelamin
-                            </label>
-                            <select name="jenis_kelamin" class="form-select form-select-dark">
-                                <option value="">-- Pilih --</option>
-                                <option value="Laki-laki" {{ old('jenis_kelamin')=='Laki-laki'?'selected':'' }}>Laki-laki</option>
-                                <option value="Perempuan" {{ old('jenis_kelamin')=='Perempuan'?'selected':'' }}>Perempuan</option>
-                                <option value="Tidak diketahui" {{ old('jenis_kelamin')=='Tidak diketahui'?'selected':'' }}>Tidak diketahui</option>
-                            </select>
-                        </div>
-
-                        {{-- 4. Usia --}}
-                        <div class="col-md-4">
-                            <label class="form-label-custom">
-                                <i class="ph-bold ph-cake"></i> Usia (Tahun)
-                            </label>
-                            <input type="number" name="usia" class="form-control form-control-dark" 
-                                   value="{{ old('usia') }}" placeholder="Contoh: 35">
-                        </div>
-
-                        {{-- 5. Kontak --}}
-                        <div class="col-md-8">
-                            <label class="form-label-custom">
-                                <i class="ph-bold ph-phone"></i> Kontak (Telp/Email)
-                            </label>
-                            <input type="text" name="kontak" class="form-control form-control-dark" 
-                                   value="{{ old('kontak') }}" placeholder="Nomor HP atau Email keluarga">
-                        </div>
-
-                        {{-- 6. Alamat --}}
-                        <div class="col-12">
-                            <label class="form-label-custom">
-                                <i class="ph-bold ph-map-pin"></i> Alamat Domisili
-                            </label>
-                            <textarea name="alamat" class="form-control form-control-dark" rows="2" 
-                                      placeholder="Alamat lengkap korban">{{ old('alamat') }}</textarea>
-                        </div>
-
-                        {{-- 7. Foto --}}
-                        <div class="col-12">
-                            <label class="form-label-custom">
-                                <i class="ph-bold ph-image"></i> Foto Korban (Opsional)
-                            </label>
-                            <input type="file" name="foto" class="form-control form-control-dark @error('foto') is-invalid @enderror" accept="image/*">
-                            @error('foto') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-
-                        {{-- SEPARATOR: Kondisi & Keterangan --}}
-                        <div class="col-12 mt-4 mb-2">
-                            <h6 class="text-white border-bottom border-secondary border-opacity-25 pb-2">
-                                <i class="ph-duotone ph-first-aid-kit me-2"></i>Kondisi & Keterangan
-                            </h6>
-                        </div>
-
-                        {{-- 8. Luka / Kondisi --}}
-                        <div class="col-md-6">
-                            <label class="form-label-custom">
-                                <i class="ph-bold ph-heartbeat"></i> Kondisi Fisik / Luka
-                            </label>
-                            <textarea name="luka" class="form-control form-control-dark" rows="4" 
-                                      placeholder="Deskripsikan luka, memar, atau kondisi fisik saat ditemukan...">{{ old('luka') }}</textarea>
-                        </div>
-
-                        {{-- 9. Keterangan Tambahan --}}
-                        <div class="col-md-6">
-                            <label class="form-label-custom">
-                                <i class="ph-bold ph-info"></i> Keterangan Tambahan
-                            </label>
-                            <textarea name="keterangan" class="form-control form-control-dark" rows="4" 
-                                      placeholder="Catatan medis riwayat penyakit, atau informasi relevan lainnya...">{{ old('keterangan') }}</textarea>
-                        </div>
-
-                        {{-- 10. Versi Kejadian --}}
-                        <div class="col-12">
-                            <label class="form-label-custom">
-                                <i class="ph-bold ph-chat-text"></i> Versi Kejadian (Dari Korban/Saksi)
-                            </label>
-                            <textarea name="versi_kejadian" class="form-control form-control-dark" rows="4" 
-                                      placeholder="Kronologi singkat kejadian berdasarkan keterangan korban...">{{ old('versi_kejadian') }}</textarea>
-                        </div>
-
-                        {{-- Buttons --}}
-                        <div class="col-12 mt-4 d-flex justify-content-end gap-3">
-                            <a href="{{ route('korban.index') }}" class="btn btn-ghost">
-                                Batal
-                            </a>
-                            <button type="submit" class="btn btn-glow d-flex align-items-center gap-2">
-                                <i class="ph-bold ph-floppy-disk"></i> Simpan Data Korban
-                            </button>
-                        </div>
-
+                    {{-- SECTION 1: KASUS & IDENTITAS --}}
+                    <div class="section-divider mt-0">
+                        <i class="ph-duotone ph-identification-card text-info fs-5"></i>
+                        <span class="section-title">Data Identitas</span>
+                        <div class="section-line"></div>
                     </div>
-                </form>
 
+                    <div class="row g-4">
+                        {{-- Kasus Terkait --}}
+                        <div class="col-12">
+                            <label class="form-label-glow">Kasus Terkait <span class="required-star">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text input-group-text-glass"><i class="ph-bold ph-folder-open"></i></span>
+                                <select name="kasus_id" class="form-select form-select-glass" required>
+                                    <option value="" selected disabled>Pilih Nomor Kasus...</option>
+                                    @foreach($kasus as $k)
+                                        <option value="{{ $k->id }}" {{ old('kasus_id') == $k->id ? 'selected' : '' }}>
+                                            [#{{ $k->nomor_kasus }}] {{ $k->judul }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        {{-- NIK --}}
+                        <div class="col-md-6">
+                            <label class="form-label-glow">NIK (KTP)</label>
+                            <div class="input-group">
+                                <span class="input-group-text input-group-text-glass"><i class="ph-bold ph-cardholder"></i></span>
+                                <input type="number" name="nik" class="form-control form-control-glass" 
+                                       placeholder="16 Digit NIK" value="{{ old('nik') }}">
+                            </div>
+                        </div>
+
+                        {{-- Nama Lengkap --}}
+                        <div class="col-md-6">
+                            <label class="form-label-glow">Nama Lengkap <span class="required-star">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text input-group-text-glass"><i class="ph-bold ph-user"></i></span>
+                                <input type="text" name="nama" class="form-control form-control-glass" 
+                                       placeholder="Nama sesuai identitas" value="{{ old('nama') }}" required>
+                            </div>
+                        </div>
+
+                        {{-- TTL --}}
+                        <div class="col-md-6">
+                            <label class="form-label-glow">Tempat Lahir</label>
+                            <div class="input-group">
+                                <span class="input-group-text input-group-text-glass"><i class="ph-bold ph-map-pin"></i></span>
+                                <input type="text" name="tempat_lahir" class="form-control form-control-glass" value="{{ old('tempat_lahir') }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-glow">Tanggal Lahir</label>
+                            <input type="date" name="tanggal_lahir" class="form-control form-control-glass standalone-input" value="{{ old('tanggal_lahir') }}">
+                        </div>
+
+                        {{-- Jenis Kelamin & No Telp --}}
+                        <div class="col-md-6">
+                            <label class="form-label-glow">Jenis Kelamin</label>
+                            <div class="input-group">
+                                <span class="input-group-text input-group-text-glass"><i class="ph-bold ph-gender-intersex"></i></span>
+                                <select name="jenis_kelamin" class="form-select form-select-glass">
+                                    <option value="Laki-laki">Laki-laki</option>
+                                    <option value="Perempuan">Perempuan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-glow">Nomor Telepon</label>
+                            <div class="input-group">
+                                <span class="input-group-text input-group-text-glass"><i class="ph-bold ph-phone"></i></span>
+                                <input type="number" name="no_telp" class="form-control form-control-glass" 
+                                       placeholder="Contoh: 0812..." value="{{ old('no_telp') }}">
+                            </div>
+                        </div>
+
+                        {{-- Alamat --}}
+                        <div class="col-12">
+                            <label class="form-label-glow">Alamat Domisili</label>
+                            <textarea name="alamat" class="form-control form-control-glass standalone-input" rows="2" 
+                                      placeholder="Alamat lengkap korban...">{{ old('alamat') }}</textarea>
+                        </div>
+                    </div>
+
+                    {{-- SECTION 2: KONDISI & MEDIA --}}
+                    <div class="section-divider">
+                        <i class="ph-duotone ph-first-aid-kit text-info fs-5"></i>
+                        <span class="section-title">Kondisi & Bukti</span>
+                        <div class="section-line"></div>
+                    </div>
+
+                    <div class="row g-4">
+                        {{-- Status Kondisi --}}
+                        <div class="col-md-6">
+                            <label class="form-label-glow">Status Kondisi <span class="required-star">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text input-group-text-glass"><i class="ph-bold ph-heartbeat"></i></span>
+                                <select name="status_korban" class="form-select form-select-glass" required>
+                                    <option value="Luka Ringan">🟡 Luka Ringan</option>
+                                    <option value="Luka Berat">🔴 Luka Berat</option>
+                                    <option value="Meninggal Dunia">⚫ Meninggal Dunia</option>
+                                    <option value="Sehat/Selamat">🟢 Sehat / Selamat</option>
+                                    <option value="Trauma Psikis">🔵 Trauma Psikis</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {{-- Foto Korban --}}
+                        <div class="col-md-6">
+                            <label class="form-label-glow">Foto Korban (Opsional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text input-group-text-glass"><i class="ph-bold ph-image"></i></span>
+                                <input type="file" name="foto" class="form-control form-control-glass" accept="image/*">
+                            </div>
+                        </div>
+
+                        {{-- Keterangan Luka --}}
+                        <div class="col-12">
+                            <label class="form-label-glow">Keterangan Luka / Fisik</label>
+                            <textarea name="keterangan_luka" class="form-control form-control-glass standalone-input" rows="3" 
+                                      placeholder="Deskripsikan luka memar, lecet, atau kondisi fisik saat ditemukan...">{{ old('keterangan_luka') }}</textarea>
+                        </div>
+
+                        {{-- Versi Kejadian --}}
+                        <div class="col-12">
+                            <label class="form-label-glow">Keterangan Singkat (Versi Korban)</label>
+                            <textarea name="versi_kejadian" class="form-control form-control-glass standalone-input" rows="3" 
+                                      placeholder="Apa yang disampaikan korban mengenai kejadian tersebut?">{{ old('versi_kejadian') }}</textarea>
+                        </div>
+                    </div>
+
+                    {{-- ACTION BUTTONS --}}
+                    <div class="d-flex justify-content-end align-items-center gap-3 mt-5 pt-3 border-top border-secondary border-opacity-10">
+                        <button type="button" class="btn btn-glass-cancel" onclick="window.history.back()">Batal</button>
+                        <button type="button" class="btn btn-neon-save" onclick="confirmSubmit()">
+                            <i class="ph-bold ph-floppy-disk me-2"></i> Simpan Data Korban
+                        </button>
+                    </div>
+
+                </form>
             </div>
         </div>
     </div>
 </div>
+
+{{-- JAVASCRIPT LOGIC --}}
+<script>
+    // SweetAlert Confirmation
+    function confirmSubmit() {
+        const form = document.getElementById('createKorbanForm');
+        
+        // Cek validasi HTML5 standar
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        Swal.fire({
+            title: 'Simpan Data Korban?',
+            text: "Pastikan data identitas dan kondisi sudah sesuai.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#06b6d4', // Cyan
+            cancelButtonColor: '#334155',  // Slate
+            confirmButtonText: 'Ya, Simpan!',
+            cancelButtonText: 'Periksa Lagi',
+            background: '#1e293b',
+            color: '#fff',
+            width: '400px'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Tampilkan loading state
+                Swal.fire({
+                    title: 'Menyimpan...',
+                    timer: 2000,
+                    didOpen: () => { Swal.showLoading() },
+                    background: '#1e293b',
+                    color: '#fff',
+                    showConfirmButton: false
+                });
+                
+                // Submit form
+                setTimeout(() => {
+                    form.submit();
+                }, 800); 
+            }
+        })
+    }
+</script>
+
 @endsection

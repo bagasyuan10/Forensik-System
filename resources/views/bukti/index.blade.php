@@ -2,297 +2,295 @@
 
 @section('content')
 
-{{-- Style Khusus Halaman Ini --}}
+{{-- 1. LIBRARY TAMBAHAN --}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
-    /* Base Elements */
-    .page-title {
-        background: linear-gradient(to right, #fff, #94a3b8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 800;
-        letter-spacing: -0.5px;
+    /* --- BACKGROUND ANIMATION --- */
+    .bg-blob {
+        position: absolute; filter: blur(80px); z-index: 0; opacity: 0.4;
+        animation: float 10s infinite ease-in-out;
+    }
+    .blob-1 { top: -10%; right: -5%; width: 300px; height: 300px; background: #f59e0b; }
+    .blob-2 { bottom: 10%; left: -5%; width: 250px; height: 250px; background: #ef4444; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
     }
 
-    /* Cards */
-    .custom-card {
-        background: #1e293b;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 16px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    /* --- GLASS PANEL & SEARCH --- */
+    .glass-panel {
+        background: rgba(30, 41, 59, 0.4);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        position: relative; z-index: 1;
     }
 
-    /* Evidence Item Card */
+    .search-input {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff; border-radius: 50px;
+        padding: 14px 20px 14px 50px; transition: all 0.3s;
+    }
+    .search-input:focus {
+        background: rgba(15, 23, 42, 0.9);
+        border-color: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+        color: #fff;
+    }
+
+    /* --- CARD DESIGN --- */
     .evidence-card {
-        background: #1e293b;
+        background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8));
         border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 16px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        height: 100%;
-        position: relative;
+        border-radius: 24px;
+        position: relative; overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        height: 100%; display: flex; flex-direction: column;
     }
 
     .evidence-card:hover {
-        transform: translateY(-5px);
-        border-color: rgba(34, 211, 238, 0.3);
-        box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+        transform: translateY(-8px) scale(1.02);
+        border-color: rgba(245, 158, 11, 0.3);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(245, 158, 11, 0.15);
     }
 
-    /* Thumbnail Area */
-    .thumb-wrapper {
-        height: 180px;
-        width: 100%;
-        background: #0f172a;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
+    /* Neon Line Bottom */
+    .evidence-card::after {
+        content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px;
+        background: linear-gradient(90deg, transparent, #f59e0b, #ef4444, transparent);
+        opacity: 0.6;
+    }
+
+    /* --- THUMBNAIL STYLE --- */
+    .thumb-container {
+        width: 80px; aspect-ratio: 1 / 1; 
+        border-radius: 20px; overflow: hidden;
+        border: 2px solid rgba(255,255,255,0.1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        flex-shrink: 0; background: #0f172a; 
     }
 
     .thumb-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+        width: 100%; height: 100%; object-fit: cover; 
         transition: transform 0.5s;
     }
+    .evidence-card:hover .thumb-img { transform: scale(1.1); }
 
-    .evidence-card:hover .thumb-img {
-        transform: scale(1.05);
+    /* --- ACTION BUTTONS (BULAT) --- */
+    .btn-action-glass {
+        width: 38px; height: 38px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.05);
+        color: #94a3b8; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none; cursor: pointer;
+    }
+    .btn-action-glass:hover { transform: translateY(-3px) scale(1.1); color: #fff; }
+    
+    .btn-action-edit:hover { 
+        background: rgba(245, 158, 11, 0.2); border-color: #f59e0b; color: #fbbf24;
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+    }
+    .btn-action-delete:hover { 
+        background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #fca5a5;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
     }
 
-    /* Form Elements (Glassy) */
-    .form-control-glass, .form-select-glass {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #e2e8f0;
-        border-radius: 50px; /* Pill shape */
-        padding: 10px 20px;
+    /* --- TEXT & UTILS --- */
+    .text-gradient {
+        background: linear-gradient(to right, #fff, #fcd34d);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .btn-neon-primary {
+        background: linear-gradient(90deg, #f59e0b, #ef4444);
+        color: white; border: none; font-weight: 600;
+        padding: 10px 25px; border-radius: 50px;
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); transition: 0.3s;
+    }
+    .btn-neon-primary:hover {
+        box-shadow: 0 0 25px rgba(245, 158, 11, 0.6);
+        transform: translateY(-2px); color: white;
     }
     
-    .form-control-glass:focus, .form-select-glass:focus {
-        background: rgba(15, 23, 42, 0.8);
-        border-color: #22d3ee;
-        color: #fff;
-        box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.1);
-    }
-    
-    .form-control-glass::placeholder { color: #64748b; }
-
-    /* Buttons */
-    .btn-glow {
-        background: linear-gradient(135deg, #06b6d4, #3b82f6);
-        border: none;
-        color: white;
-        font-weight: 600;
-        box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
-        transition: transform 0.2s;
-    }
-    .btn-glow:hover {
-        transform: translateY(-2px);
-        color: white;
-        box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
-    }
-
-    .btn-action-circle {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
-        transition: all 0.2s;
-    }
-
-    .btn-view { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
-    .btn-view:hover { background: #38bdf8; color: #000; }
-
-    .btn-download { background: rgba(16, 185, 129, 0.1); color: #34d399; }
-    .btn-download:hover { background: #10b981; color: #fff; }
-
-    .btn-delete { background: rgba(239, 68, 68, 0.1); color: #f87171; }
-    .btn-delete:hover { background: #ef4444; color: #fff; }
-
-    /* Badge Type */
-    .badge-type {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255,255,255,0.1);
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-    }
-
-    /* Modal Customization */
-    .modal-content-dark {
-        background-color: #1e293b;
-        color: #e2e8f0;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    .modal-header { border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
+    /* Pagination */
+    .pagination .page-link { background: rgba(15, 23, 42, 0.8); border-color: rgba(255, 255, 255, 0.1); color: #94a3b8; }
+    .pagination .active .page-link { background: #f59e0b; border-color: #f59e0b; color: white; }
 </style>
 
-<div class="container-fluid py-4">
+<div class="position-relative container-fluid py-4" style="min-height: 80vh;">
+    
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="page-title mb-1">Manajemen Bukti</h2>
-            <p class="text-secondary m-0" style="font-size: 0.9rem;">Kelola arsip digital dan barang bukti fisik</p>
+    {{-- HEADER --}}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 animate__animated animate__fadeInDown">
+        <div class="mb-3 mb-md-0">
+            <h2 class="fw-bold display-6 text-gradient mb-1">Daftar Barang Bukti</h2>
+            <div class="d-flex align-items-center gap-2 text-secondary">
+                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-20 px-3 py-1 rounded-pill">
+                    Total: {{ $bukti->total() ?? 0 }}
+                </span>
+                <span style="font-size: 0.9rem;">Arsip fisik & digital</span>
+            </div>
         </div>
         
-        <a href="{{ route('bukti.create') }}" class="btn btn-glow rounded-pill d-flex align-items-center gap-2 px-4 py-2">
-            <i class="ph-bold ph-upload-simple"></i>
+        <a href="{{ route('bukti.create') }}" class="btn btn-neon-primary d-flex align-items-center gap-2">
+            <i class="ph-bold ph-upload-simple" style="font-size: 1.2rem;"></i>
             <span>Upload Bukti</span>
         </a>
     </div>
 
-    <div class="custom-card p-4 mb-4">
+    {{-- SEARCH & FILTER --}}
+    <div class="glass-panel p-4 mb-5 animate__animated animate__fadeIn animate__delay-1s">
         <form method="GET" class="row g-3 align-items-center">
             <div class="col-md-6">
                 <div class="position-relative">
-                    <i class="ph-bold ph-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary"></i>
-                    <input type="text" name="search" class="form-control form-control-glass ps-5" 
-                           placeholder="Cari nama bukti atau deskripsi..." 
+                    <i class="ph-bold ph-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" style="font-size: 1.2rem;"></i>
+                    <input type="text" name="search" class="form-control search-input" 
+                           placeholder="Cari nama bukti, deskripsi..." 
                            value="{{ request('search') }}">
                 </div>
             </div>
-
             <div class="col-md-3">
-                <select name="filter" class="form-select form-select-glass">
+                <select name="filter" class="form-select search-input ps-4" style="cursor: pointer;">
                     <option value="all">📂 Semua Tipe</option>
-                    <option value="image" {{ request('filter') == 'image' ? 'selected' : '' }}>🖼️ Gambar (JPG/PNG)</option>
-                    <option value="pdf" {{ request('filter') == 'pdf' ? 'selected' : '' }}>📄 Dokumen (PDF)</option>
+                    <option value="image" {{ request('filter') == 'image' ? 'selected' : '' }}>🖼️ Gambar</option>
+                    <option value="pdf" {{ request('filter') == 'pdf' ? 'selected' : '' }}>📄 PDF</option>
                 </select>
             </div>
-
             <div class="col-md-3">
-                <button class="btn btn-primary w-100 rounded-pill fw-bold" 
-                        style="background: #3b82f6; border: none; padding: 10px;">
-                    Terapkan Filter
+                <button class="btn btn-warning w-100 rounded-pill fw-bold" 
+                        style="height: 50px; background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24;">
+                    Filter
                 </button>
             </div>
         </form>
     </div>
 
-    @if($bukti->count() == 0)
-        <div class="d-flex flex-column align-items-center justify-content-center py-5 custom-card">
-            <div class="rounded-circle bg-dark p-4 mb-3 border border-secondary border-opacity-25">
-                <i class="ph-duotone ph-magnifying-glass text-secondary" style="font-size: 48px;"></i>
-            </div>
-            <h5 class="text-white fw-bold">Tidak ada bukti ditemukan</h5>
-            <p class="text-secondary">Coba ubah kata kunci pencarian atau upload bukti baru.</p>
+    {{-- CONTENT GRID --}}
+    @if($bukti->isEmpty())
+        <div class="glass-panel p-5 text-center animate__animated animate__zoomIn">
+            <div class="mb-3"><i class="ph-duotone ph-package text-secondary" style="font-size: 64px;"></i></div>
+            <h4 class="text-white fw-bold">Data Tidak Ditemukan</h4>
+            <p class="text-secondary">Belum ada barang bukti yang diupload.</p>
         </div>
-    @endif
-
-    <div class="row g-4">
-        @foreach($bukti as $item)
-        <div class="col-md-3 col-sm-6">
-            <div class="evidence-card">
+    @else
+        <div class="row g-4">
+            @foreach($bukti as $index => $item)
+            <div class="col-xl-3 col-lg-4 col-md-6 animate__animated animate__fadeInUp" style="animation-delay: {{ $index * 0.1 }}s;">
                 
-                <div class="thumb-wrapper">
-                    <span class="badge-type">
-                        {{ strtoupper($item->file_type == 'application/pdf' ? 'PDF' : (Str::startsWith($item->file_type, 'image/') ? 'IMG' : 'FILE')) }}
-                    </span>
-
-                    @if(Str::startsWith($item->file_type, 'image/'))
-                        <img src="{{ asset('storage/'.$item->file_path) }}" class="thumb-img" alt="{{ $item->nama_bukti }}">
-                    @elseif($item->file_type == 'application/pdf')
-                        <i class="ph-duotone ph-file-pdf text-danger" style="font-size: 64px;"></i>
-                    @else
-                        <i class="ph-duotone ph-file text-info" style="font-size: 64px;"></i>
-                    @endif
-
-                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 50px; background: linear-gradient(to top, rgba(30,41,59,1), transparent);"></div>
-                </div>
-
-                <div class="p-3">
-                    <h6 class="fw-bold text-white mb-1 text-truncate" title="{{ $item->nama_bukti }}">{{ $item->nama_bukti }}</h6>
-                    <p class="text-secondary small mb-3 text-truncate">{{ $item->deskripsi ?? 'Tidak ada deskripsi' }}</p>
-
-                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded bg-dark border border-secondary border-opacity-10">
-                        <div class="d-flex align-items-center gap-1 text-secondary" style="font-size: 0.75rem;">
-                            <i class="ph-bold ph-hard-drives"></i>
-                            <span>{{ number_format($item->file_size / 1024, 2) }} KB</span>
+                {{-- CARD UTAMA --}}
+                <div class="evidence-card p-4">
+                    
+                    {{-- 1. BAGIAN ATAS (Foto Kiri - Teks Kanan) --}}
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        
+                        {{-- Thumbnail Box --}}
+                        <div class="thumb-container">
+                            @if(Str::startsWith($item->file_type, 'image/') && $item->file_path)
+                                <img src="{{ asset('storage/' . $item->file_path) }}" 
+                                     class="thumb-img" 
+                                     alt="{{ $item->nama_bukti }}"
+                                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($item->nama_bukti) }}&background=random&color=fff&bold=true';">
+                            @elseif($item->file_type == 'application/pdf')
+                                <img src="https://ui-avatars.com/api/?name=PDF&background=ef4444&color=fff&bold=true" class="thumb-img" alt="PDF">
+                            @else
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($item->nama_bukti) }}&background=random&color=fff&bold=true" class="thumb-img" alt="File">
+                            @endif
                         </div>
-                        <div class="text-secondary" style="font-size: 0.75rem;">
-                            {{ \Carbon\Carbon::parse($item->created_at)->format('d M Y') }}
+
+                        {{-- Info Utama (Tanpa ID) --}}
+                        <div class="overflow-hidden flex-grow-1">
+                            <h6 class="fw-bold text-white mb-2 text-truncate" title="{{ $item->nama_bukti }}">
+                                {{ $item->nama_bukti }}
+                            </h6>
+                            
+                            {{-- Tipe File Badge --}}
+                            <div class="d-flex align-items-center gap-1">
+                                <span class="d-inline-block rounded-circle" 
+                                      style="width: 8px; height: 8px; background-color: {{ $item->file_type == 'application/pdf' ? '#ef4444' : '#f59e0b' }}">
+                                </span>
+                                <span class="text-secondary small text-uppercase" style="font-size: 0.7rem;">
+                                    {{ Str::startsWith($item->file_type, 'image/') ? 'Image' : 'Document' }}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-center gap-2">
-                        <button class="btn-action-circle btn-view" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#previewModal{{ $item->id }}" 
-                                title="Lihat Preview">
-                            <i class="ph-bold ph-eye"></i>
-                        </button>
+                    <hr class="border-secondary border-opacity-10 my-2">
 
-                        <a href="{{ asset('storage/'.$item->file_path) }}" 
-                           target="_blank" 
-                           class="btn-action-circle btn-download" 
-                           title="Download File">
-                            <i class="ph-bold ph-download-simple"></i>
-                        </a>
+                    {{-- 2. Deskripsi --}}
+                    <div class="flex-grow-1 mb-3">
+                        <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Keterangan</small>
+                        <p class="text-secondary small mt-1" style="line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ $item->deskripsi ?? 'Tidak ada keterangan detail.' }}
+                        </p>
+                        <div class="d-flex align-items-center gap-2 mt-2">
+                             <span class="badge bg-dark border border-secondary border-opacity-25 text-secondary" style="font-size: 0.65rem;">
+                                {{ number_format($item->file_size / 1024, 0) }} KB
+                            </span>
+                        </div>
+                    </div>
 
-                        <form action="{{ route('bukti.destroy', $item->id) }}" method="POST" 
-                              onsubmit="return confirm('Apakah Anda yakin ingin menghapus bukti ini secara permanen?')">
-                            @csrf @method('DELETE')
-                            <button class="btn-action-circle btn-delete" title="Hapus Bukti">
+                    {{-- 3. Action Buttons (Tanpa Preview) --}}
+                    <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top border-secondary border-opacity-10">
+                        
+                        <div class="d-flex align-items-center text-secondary small" style="font-size: 0.75rem;">
+                            <i class="ph-duotone ph-calendar-blank me-1"></i>
+                            <span>{{ $item->created_at->format('d M Y') }}</span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            {{-- Edit Button --}}
+                            <a href="{{ route('bukti.edit', $item->id) }}" class="btn-action-glass btn-action-edit" title="Edit">
+                                <i class="ph-bold ph-pencil-simple"></i>
+                            </a>
+
+                            {{-- Delete Button --}}
+                            <button type="button" class="btn-action-glass btn-action-delete" onclick="confirmDelete('{{ $item->id }}')" title="Hapus">
                                 <i class="ph-bold ph-trash"></i>
                             </button>
-                        </form>
+                            <form id="delete-form-{{ $item->id }}" action="{{ route('bukti.destroy', $item->id) }}" method="POST" class="d-none">
+                                @csrf @method('DELETE')
+                            </form>
+                        </div>
                     </div>
+
                 </div>
             </div>
+            @endforeach
         </div>
 
-        <div class="modal fade" id="previewModal{{ $item->id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered">
-                <div class="modal-content modal-content-dark rounded-4">
-                    <div class="modal-header">
-                        <h5 class="modal-title d-flex align-items-center gap-2">
-                            <i class="ph-duotone ph-file-magnifying-glass text-info"></i>
-                            {{ $item->nama_bukti }}
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-0 text-center bg-black rounded-bottom-4" style="min-height: 400px; display: grid; place-items: center;">
-                        
-                        @if(Str::startsWith($item->file_type, 'image/'))
-                            <img src="{{ asset('storage/'.$item->file_path) }}" class="img-fluid" style="max-height: 80vh;">
-                        
-                        @elseif($item->file_type == 'application/pdf')
-                            <iframe src="{{ asset('storage/'.$item->file_path) }}" 
-                                    width="100%" height="600px" 
-                                    style="border:none;"></iframe>
-                        @else
-                            <div class="text-center py-5">
-                                <i class="ph-duotone ph-file-x text-secondary" style="font-size: 64px;"></i>
-                                <p class="mt-3 text-secondary">Preview tidak tersedia untuk format file ini.</p>
-                                <a href="{{ asset('storage/'.$item->file_path) }}" class="btn btn-primary rounded-pill mt-2">
-                                    Download File
-                                </a>
-                            </div>
-                        @endif
-
-                    </div>
-                </div>
-            </div>
+        <div class="mt-5 d-flex justify-content-center">
+            {{ $bukti->withQueryString()->links() }}
         </div>
-        @endforeach
-    </div>
-
-    <div class="mt-4">
-        {{ $bukti->links() }}
-    </div>
-
+    @endif
 </div>
+
+<script>
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success', title: 'Berhasil!', text: "{{ session('success') }}",
+            background: '#1e293b', color: '#fff', toast: true, position: 'top-end',
+            showConfirmButton: false, timer: 3000, timerProgressBar: true
+        });
+    @endif
+
+    function confirmDelete(id) {
+        Swal.fire({
+            title: 'Hapus Bukti?', text: "File akan terhapus permanen!",
+            icon: 'warning', showCancelButton: true,
+            confirmButtonColor: '#ef4444', cancelButtonColor: '#334155',
+            confirmButtonText: 'Hapus', cancelButtonText: 'Batal',
+            background: '#0f172a', color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) document.getElementById('delete-form-' + id).submit();
+        })
+    }
+</script>
+
 @endsection

@@ -1,5 +1,11 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+
+// Controller Imports
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KasusController;
 use App\Http\Controllers\KorbanController;
@@ -7,53 +13,84 @@ use App\Http\Controllers\PelakuController;
 use App\Http\Controllers\BuktiController;
 use App\Http\Controllers\TindakanController;
 use App\Http\Controllers\LaporanController;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 
-// Pastikan route ini ada:
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+/*
+|--------------------------------------------------------------------------
+| 1. PUBLIC ROUTES (Bisa Diakses Siapa Saja)
+|--------------------------------------------------------------------------
+*/
 
-Route::get('/', fn() => redirect('/dashboard'));
+// Halaman Depan (Landing Page Masyarakat)
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
+
+// Proses Kirim Aduan dari Masyarakat (Tanpa Login)
+// Menggunakan controller yang sama, tapi lewat route khusus public
+Route::post('/kirim-aduan', [LaporanController::class, 'store'])->name('laporan.store.public');
 
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+/*
+|--------------------------------------------------------------------------
+| 2. GUEST ROUTES (Hanya untuk yang Belum Login)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])
+        ->middleware('throttle:3,1'); // Limit: Maks 3x register per menit
+});
 
-// CRUD KASUS
-Route::resource('kasus', KasusController::class);
 
-// CRUD KORBAN
-Route::resource('korban', KorbanController::class);
+/*
+|--------------------------------------------------------------------------
+| 3. AUTH ROUTES (Sudah Login)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->group(function () {
 
-// CRUD PELAKU
-Route::resource('pelaku', PelakuController::class);
+    // Logout
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// CRUD BUKTI
-Route::resource('bukti', BuktiController::class);
-
-// CRUD TINDAKAN
-Route::resource('tindakan', TindakanController::class);
-
-// CRUD LAPORAN
-Route::resource('laporan', LaporanController::class);
-
-//CRUD USER
-Route::post('/logout', function () {
-    Auth::logout();
+    // --- LOGIKA VERIFIKASI EMAIL ---
     
-    // Gunakan helper request() (huruf kecil) agar tidak error
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
+    // 1. Tampilan "Silakan Cek Email"
+    Route::get('/email/verify', function () {
+        return view('auth.verify-email');
+    })->name('verification.notice');
 
-    return redirect('/login');
-})->name('logout');
+    // 2. Proses Link dari Email (Saat user klik link di inbox)
+    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+        $request->fulfill();
+        return redirect()->route('dashboard')->with('success', 'Selamat! Akun Anda telah berhasil diverifikasi.');
+    })->middleware(['signed'])->name('verification.verify');
 
-// Route untuk Menampilkan Halaman Login
-Route::get('/login', function () {
-    return view('layouts.login'); // <--- Mengarah ke folder layouts/login.blade.php
-})->name('login');
+    // 3. Tombol "Kirim Ulang Email"
+    Route::post('/email/verification-notification', function (Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('message', 'Link verifikasi baru telah dikirim!');
+    })->middleware(['throttle:6,1'])->name('verification.send');
 
-// Route untuk Menampilkan Halaman Register
-Route::get('/register', function () {
-    return view('layouts.register'); // <--- Mengarah ke folder layouts/register.blade.php
-})->name('register');
+
+    /*
+    |--------------------------------------------------------------------------
+    | 4. VERIFIED ROUTES (Login + Email Verified) -> ADMIN AREA
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(['verified', 'is_admin'])->group(function () {
+        
+        // Dashboard Admin
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        // Resource Routes (Hanya Admin yang boleh akses)
+        Route::resource('kasus', KasusController::class);
+        Route::resource('korban', KorbanController::class);
+        Route::resource('pelaku', PelakuController::class);
+        Route::resource('bukti', BuktiController::class);
+        Route::resource('tindakan', TindakanController::class);
+        Route::resource('laporan', LaporanController::class);
+    });
+
+});
